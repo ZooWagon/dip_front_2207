@@ -1,19 +1,10 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
+  <div class="clock">
+    <h1>3-4-2 霍夫直线检测</h1>
     <div>
-      <el-row>
-        <el-button>默认按钮</el-button>
-        <el-button type="primary">主要按钮</el-button>
-        <el-button type="success">成功按钮</el-button>
-        <el-button type="info">信息按钮</el-button>
-        <el-button type="warning">警告按钮</el-button>
-        <el-button type="danger">危险按钮</el-button>
-        <el-button type="primary" icon="el-icon-search">搜索</el-button>
-      </el-row>
-      <h3>sssppp</h3>
       <el-form ref="para-form" :model="paraPacket" class="register-container" label-width="200px">
-        <el-form-item label="图片">
+        <el-form-item label="图片：">
+          <h3>请上传一张边缘检测的结果图片</h3>
           <el-upload
               ref="pic-upload"
               :action="upload_img_addr"
@@ -21,7 +12,6 @@
               multiple
               :on-success="handleSuccessPic"
               :before-upload="beforeUploadPic"
-              :file-list="picList"
               list-type="picture"
               :limit = "1"
           >
@@ -33,8 +23,17 @@
             </template>
           </el-upload>
         </el-form-item>
-        <el-form-item label="扰动值(Epsilon)：">
-          <el-slider v-model="paraPacket.para1" show-input :max="0.05" :step="0.005"></el-slider>
+        <el-form-item label="threshold：">
+          检测一条直线所需最少的曲线交点
+          <el-slider v-model="paraPacket.para1" show-input :max="500" :step="1"></el-slider>
+        </el-form-item>
+        <el-form-item label="minLineLength：">
+          组成一条直线的最少点的数量
+          <el-slider v-model="paraPacket.para2" show-input :max="500" :step="1"></el-slider>
+        </el-form-item>
+        <el-form-item label="maxLineGap：">
+          认为在一条直线上的亮点的最大距离
+          <el-slider v-model="paraPacket.para3" show-input :max="50" :step="1"></el-slider>
         </el-form-item>
       </el-form>
       <div align="center">
@@ -54,17 +53,15 @@
 import axios from "axios";
 
 export default {
-  name: 'HelloWorld',
+  name: 'HoughLine',
   data(){
     return{
-      picList: [],
-      msg: "HelloWorld",
       paraPacket: {
         sid: '',
-        stime: '1970-1-1 00:00',
-        stype: '1',
+        stime: '1970-1-1 00:00:00',
+        stype: '3046',
         img1: 'img1', img2: '',
-        para1: '', para2: '', para3: '', para4: '', para5: '', para6: '', para7: '', para8: '',
+        para1: 200, para2: 200, para3: 20, para4: '', para5: '', para6: '', para7: '', para8: '',
         status: '处理中'
       },
       upload_img_addr: axios.defaults.baseURL+"/upload_image"
@@ -83,7 +80,7 @@ export default {
         })
         return
       }else{
-        this.paraPacket.img_name=response.info
+        this.paraPacket.img1=response.info
         console.log(this.paraPacket)
       }
       console.log('handleSuccessPic end')
@@ -107,14 +104,11 @@ export default {
       return isFormat
     },
     async submit_para() {
-      // get verify_id and put into paraPacket
       await this.get_sid()
-      // post parameter, if success, will jump to next page
-      // else, will jump to index page
       await this.post_para()
     },
     async get_sid() {
-      // get verify_id and put into paraPacket
+      // get sid and put into paraPacket
       await this.$axios
           .get('/get_sid')
           .then((res) => {
@@ -131,7 +125,7 @@ export default {
       var isSuccess = false
       // post parameter
       await this.$axios
-          .post('/post_para_test',this.paraPacket)
+          .post('/hough_line',this.paraPacket)
           .then((res) => {
             console.log(res)
             if (res.data.status === 200) {
@@ -152,11 +146,9 @@ export default {
           .catch(function(error) {
             console.log(error)
           })
-      // if (isSuccess) {
-      //   this.next_step()
-      // } else {
-      //   this.to_index()
-      // }
+      if (isSuccess) {
+        this.$router.replace({ path: '/home' })
+      }
     }
   }
 }
@@ -164,23 +156,19 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+h1 {
+  font-family: "微软雅黑";
+  font-size: 24px;
+}
 h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+  font-family: "微软雅黑";
+  font-size: 18px;
+  margin: 10px 0 10px;
 }
 .el-tip {
   font-family: "微软雅黑";
   font-size: 14px;
   color: #929497;
+  margin: 10px 0 10px;
 }
 </style>

@@ -1,42 +1,24 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
+  <div class="clock">
+    <h1>3-1-2 灰度化</h1>
     <div>
-      <el-row>
-        <el-button>默认按钮</el-button>
-        <el-button type="primary">主要按钮</el-button>
-        <el-button type="success">成功按钮</el-button>
-        <el-button type="info">信息按钮</el-button>
-        <el-button type="warning">警告按钮</el-button>
-        <el-button type="danger">危险按钮</el-button>
-        <el-button type="primary" icon="el-icon-search">搜索</el-button>
-      </el-row>
-      <h3>sssppp</h3>
-      <el-form ref="para-form" :model="paraPacket" class="register-container" label-width="200px">
-        <el-form-item label="图片">
-          <el-upload
-              ref="pic-upload"
-              :action="upload_img_addr"
-              name="file"
-              multiple
-              :on-success="handleSuccessPic"
-              :before-upload="beforeUploadPic"
-              :file-list="picList"
-              list-type="picture"
-              :limit = "1"
-          >
-            <el-button size="small" type="primary">上传图片</el-button>
-            <template #tip>
-              <div class="el-tip">
-                请上传一张JPG或PNG图片
-              </div>
-            </template>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="扰动值(Epsilon)：">
-          <el-slider v-model="paraPacket.para1" show-input :max="0.05" :step="0.005"></el-slider>
-        </el-form-item>
-      </el-form>
+      <el-upload
+          ref="pic-upload"
+          :action="upload_img_addr"
+          name="file"
+          multiple
+          :on-success="handleSuccessPic"
+          :before-upload="beforeUploadPic"
+          list-type="picture"
+          :limit = "1"
+      >
+        <el-button size="small" type="primary">上传图片</el-button>
+        <template #tip>
+          <div class="el-tip">
+            请上传一张JPG或PNG图片
+          </div>
+        </template>
+      </el-upload>
       <div align="center">
         <el-button
             type="primary"
@@ -54,15 +36,13 @@
 import axios from "axios";
 
 export default {
-  name: 'HelloWorld',
+  name: 'BGR2GRAY',
   data(){
     return{
-      picList: [],
-      msg: "HelloWorld",
       paraPacket: {
         sid: '',
-        stime: '1970-1-1 00:00',
-        stype: '1',
+        stime: '1970-1-1 00:00:00',
+        stype: '3012',
         img1: 'img1', img2: '',
         para1: '', para2: '', para3: '', para4: '', para5: '', para6: '', para7: '', para8: '',
         status: '处理中'
@@ -83,7 +63,7 @@ export default {
         })
         return
       }else{
-        this.paraPacket.img_name=response.info
+        this.paraPacket.img1=response.info
         console.log(this.paraPacket)
       }
       console.log('handleSuccessPic end')
@@ -107,14 +87,11 @@ export default {
       return isFormat
     },
     async submit_para() {
-      // get verify_id and put into paraPacket
       await this.get_sid()
-      // post parameter, if success, will jump to next page
-      // else, will jump to index page
       await this.post_para()
     },
     async get_sid() {
-      // get verify_id and put into paraPacket
+      // get sid and put into paraPacket
       await this.$axios
           .get('/get_sid')
           .then((res) => {
@@ -131,7 +108,7 @@ export default {
       var isSuccess = false
       // post parameter
       await this.$axios
-          .post('/post_para_test',this.paraPacket)
+          .post('/bgr2gray',this.paraPacket)
           .then((res) => {
             console.log(res)
             if (res.data.status === 200) {
@@ -152,11 +129,9 @@ export default {
           .catch(function(error) {
             console.log(error)
           })
-      // if (isSuccess) {
-      //   this.next_step()
-      // } else {
-      //   this.to_index()
-      // }
+      if (isSuccess) {
+        this.$router.replace({ path: '/home' })
+      }
     }
   }
 }
@@ -164,23 +139,19 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+h1 {
+  font-family: "微软雅黑";
+  font-size: 24px;
+}
 h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+  font-family: "微软雅黑";
+  font-size: 18px;
+  margin: 10px 0 10px;
 }
 .el-tip {
   font-family: "微软雅黑";
   font-size: 14px;
   color: #929497;
+  margin: 10px 0 10px;
 }
 </style>
